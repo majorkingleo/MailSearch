@@ -34,7 +34,7 @@ public class MailFormatMatcher extends FastFormatMatcher
             Message msg = parser.parse(file);
             logger.debug(msg.getSubject());
             
-            mainwin.appendResult( msg );
+            mainwin.appendResult( msg, search_string, file );
             
         } catch (IOException ex) {
             logger.error(ex,ex);

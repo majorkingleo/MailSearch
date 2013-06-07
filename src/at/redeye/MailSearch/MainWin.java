@@ -1,17 +1,19 @@
 package at.redeye.MailSearch;
 
-import at.redeye.FrameWork.base.AutoMBox;
-import at.redeye.FrameWork.base.BaseDialog;
-import at.redeye.FrameWork.base.BaseModuleLauncher;
-import at.redeye.FrameWork.base.FrameWorkConfigDefinitions;
-import at.redeye.FrameWork.base.Root;
+import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.base.prm.impl.gui.LocalConfig;
 import com.auxilii.msgparser.Message;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.String;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.TimerTask;
 import java.util.Vector;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 
 /**
@@ -23,7 +25,7 @@ public class MainWin extends BaseDialog {
     public static final String CONFIG_LAST_SEARCH_STRING = "LastSearchString";
     MailSearch mailsearch;
     DoSearch search = null;
-    Vector<String> messages = new Vector<String>();
+    Vector<DisplayMail> messages = new Vector<DisplayMail>();
     int add_counter = 0;
     
     /** Creates new form MainWin */
@@ -50,6 +52,8 @@ public class MainWin extends BaseDialog {
                 });                
             }
         }, 300, 300);
+        
+        jLErg.setCellRenderer(new ImageCellRenderer());
     }
     
  void onTimeOut()
@@ -152,9 +156,11 @@ public class MainWin extends BaseDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         jLErg = new javax.swing.JList();
         jBSearch = new javax.swing.JButton();
-        jTSearch = new javax.swing.JTextField();
         jBCancel = new javax.swing.JButton();
         jLStatus = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jBClean = new javax.swing.JButton();
+        jTSearch = new javax.swing.JTextField();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMQuit = new javax.swing.JMenuItem();
@@ -168,6 +174,11 @@ public class MainWin extends BaseDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
+        jLErg.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jLErgMousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jLErg);
 
         jBSearch.setText("Suche");
@@ -187,6 +198,26 @@ public class MainWin extends BaseDialog {
         jLStatus.setText(" ");
         jLStatus.setToolTipText("");
         jLStatus.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
+
+        jBClean.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/MailSearch/icons/konquefox_erase.png"))); // NOI18N
+        jBClean.setBorderPainted(false);
+        jBClean.setContentAreaFilled(false);
+        jBClean.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jBClean.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBCleanActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jBClean);
+
+        jTSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTSearchActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jTSearch);
 
         jMenu1.setText("Programm");
 
@@ -243,24 +274,24 @@ public class MainWin extends BaseDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jBCancel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                .addComponent(jLStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBSearch)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
-            .addComponent(jTSearch, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addComponent(jTSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBSearch)
@@ -307,6 +338,84 @@ public class MainWin extends BaseDialog {
         
     }//GEN-LAST:event_jBCancelActionPerformed
 
+    private void jTSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTSearchActionPerformed
+        
+        jBSearchActionPerformed(evt);
+        
+    }//GEN-LAST:event_jTSearchActionPerformed
+
+    private void jBCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCleanActionPerformed
+        
+        jTSearch.setText("");
+        jTSearch.requestFocus();
+        
+    }//GEN-LAST:event_jBCleanActionPerformed
+
+    private void jLErgMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLErgMousePressed
+              
+       System.out.println("pressed");
+
+        Object obj = jLErg.getSelectedValue();
+                
+        DisplayMail cont = null;
+        
+        if( obj instanceof DisplayMail ) {
+            cont = (DisplayMail) obj;
+        } 
+            
+
+        boolean do_popup = false;
+
+        if (evt != null) {
+            do_popup = evt.isPopupTrigger();
+        }
+
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
+                do_popup = true;
+            }
+        }
+
+
+        if (do_popup) {
+            System.out.println("popup trigger");
+
+            int idx = jLErg.locationToIndex(evt.getPoint());
+
+            if (idx >= 0) {
+                jLErg.setSelectedIndex(idx);
+                obj = jLErg.getSelectedValue();
+            }
+
+            if (obj instanceof DisplayMail) {
+                cont = (DisplayMail) obj;
+            } 
+        }
+
+        if (cont == null && do_popup) {
+            /*
+            JPopupMenu popup = new ActionPopupClipboard(this, null);
+
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());            
+            */
+            return;
+        }
+
+        if (cont == null) {
+            return;
+        }
+
+        if (do_popup) {
+            /*
+            JPopupMenu popup = new ActionPopupClipboard(this, cont);
+
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());            
+            */            
+        } else {  
+            openMail( cont );                    
+        } // else
+    }//GEN-LAST:event_jLErgMousePressed
+
 
     void do_new_search() throws InterruptedException
     {            
@@ -324,6 +433,9 @@ public class MainWin extends BaseDialog {
             }
         }
         
+        messages.clear();
+        jLErg.removeAll();
+        
         search = new DoSearch(this, jTSearch.getText());
         search.start();        
     }
@@ -331,6 +443,7 @@ public class MainWin extends BaseDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroupDesign;
     private javax.swing.JButton jBCancel;
+    private javax.swing.JButton jBClean;
     private javax.swing.JButton jBSearch;
     private javax.swing.JList jLErg;
     private javax.swing.JLabel jLStatus;
@@ -340,6 +453,7 @@ public class MainWin extends BaseDialog {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButtonMenuItem jRMetal1;
     private javax.swing.JRadioButtonMenuItem jRMotif1;
     private javax.swing.JRadioButtonMenuItem jRNimbus1;
@@ -348,9 +462,9 @@ public class MainWin extends BaseDialog {
     private javax.swing.JTextField jTSearch;
     // End of variables declaration//GEN-END:variables
 
-    void appendResult(final Message msg) 
+    void appendResult(final Message msg, final String search_string, final File file ) 
     {
-        messages.add(msg.toString());
+        messages.add(new DisplayMail(msg, search_string, file));
         add_counter++;
         
         java.awt.EventQueue.invokeLater(new Runnable(){
@@ -363,5 +477,34 @@ public class MainWin extends BaseDialog {
                 add_counter = 0;
             }
         });        
+    }
+
+    private void openMail(final DisplayMail cont)
+    {
+        new AutoMBox("MailSearch") {
+
+            @Override
+            public void do_stuff() throws Exception {
+                String open_command = root.getSetup().getLocalConfig(AppConfigDefinitions.MailProgram);
+
+                String command = open_command + " \"" + cont.getFile() + "\"";
+                logger.info(command);
+
+                String args[] = open_command.split("\\s");
+                
+                String command_array[] = new String[args.length+1];
+
+                int i;
+                
+                for( i = 0; i < args.length; i++ )
+                    command_array[i] = args[i];
+                                ;
+                command_array[i] = cont.getFile().getAbsolutePath();
+
+                Process p = Runtime.getRuntime().exec(command_array);
+            }
+
+        };
+                
     }
 }

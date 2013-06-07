@@ -16,12 +16,14 @@ import at.redeye.FrameWork.base.prm.impl.LocalConfigDefinitions;
 public class AppConfigDefinitions extends BaseAppConfigDefinitions 
 {    
     public static DBConfig MailDirectory = new DBConfig( "MailDirector", "~/.local/share/.local-mail.directory");
+    public static DBConfig MailProgram = new DBConfig( "MailProgram", "kmail --view");
     
     public static void registerDefinitions() {
 
         BaseRegisterDefinitions();
 
         addLocal(MailDirectory);          
+        addLocal(MailProgram);  
  
         GlobalConfigDefinitions.add_help_path("/at/redeye/MailSearch/resources/Help/Params/");
         LocalConfigDefinitions.add_help_path("/at/redeye/MailSearch/resources/Help/Params/");
